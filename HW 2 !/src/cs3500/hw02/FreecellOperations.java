@@ -22,7 +22,7 @@ public interface FreecellOperations<K> {
    *
    * @return the deck of cards as a list
    */
-  List<K> getDeck();
+  List<Card> getDeck();
 
   /**
    * Deal a new game of freecell with the given deck, with or without shuffling
@@ -42,13 +42,9 @@ public interface FreecellOperations<K> {
    * @param shuffle         if true, shuffle the deck else deal the deck as-is
    * @throws IllegalArgumentException if the deck is invalid
    */
-  void startGame(List<K> deck, int numCascadePiles, int numOpenPiles, boolean
-          shuffle)
-          throws
-          IllegalArgumentException;
 
   void startGame(List<Card> deck, int numCascadePiles, int numOpenPiles, boolean
-          shuffle);
+          shuffle) throws IllegalArgumentException;
 
   /**
    * Move a card from the given source pile to the given destination pile, if
