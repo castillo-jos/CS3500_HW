@@ -8,14 +8,24 @@ public class Card {
   private String value;
   private static int cardIDCount = 0;
   private int cardID;
+  private String data;
 
-  public Card cardBehind = null;
   public Card cardInFront = null;
+  public Card cardInBack = null;
 
   public PileType cardIsInPile;
+
+  /**
+   * This is the default constructor.
+   */
   public Card() {
   }
 
+  /**
+   * This builds the Card class, with suit and value and all.
+   * @param suit
+   * @param value
+   */
   public Card(String suit, String value) {
     setSuit(suit);
     setValue(value);
