@@ -16,15 +16,10 @@ public class Card {
   public PileType cardIsInPile;
 
   /**
-   * This is the default constructor.
-   */
-  public Card() {
-  }
-
-  /**
    * This builds the Card class, with suit and value and all.
-   * @param suit
-   * @param value
+   *
+   * @param suit  the Suit of the card.
+   * @param value the value of card.
    */
   public Card(String suit, String value) {
     setSuit(suit);

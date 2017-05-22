@@ -9,13 +9,12 @@ import java.util.Random;
  * Created by Gus on 5/17/2017.
  */
 public class FreecellModel implements FreecellOperations {
-  private String[] valueArray = {"A", "2", "3", "4", "5", "6", "7",
-          "8", "9", "10", "J", "Q", "K"};
+  private String[] valueArray = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
 
-  private String Club = "\u2663";
-  private String Heart = "\u2663";
-  private String Diamond = "\u2666";
-  private String Spade = "\u2660";
+  private String club = "\u2663";
+  private String heart = "\u2663";
+  private String diamond = "\u2666";
+  private String spade = "\u2660";
 
   private String[] suitArray = {"\u2764", "\u2663", "\u2666", "\u2660"};
   private Card frontOfPile = null;
@@ -58,6 +57,8 @@ public class FreecellModel implements FreecellOperations {
    */
   public void startGame(List deck, int numCascadePiles,
                         int numOpenPiles, boolean shuffle) throws IllegalArgumentException {
+    
+
     List<Card> heartCheck = new ArrayList();
     List<Card> clubCheck = new ArrayList();
     List<Card> diamondCheck = new ArrayList();
@@ -122,7 +123,6 @@ public class FreecellModel implements FreecellOperations {
   public void move(PileType source, int pileNumber, int cardIndex,
                    PileType destination, int destPileNumber) throws IllegalArgumentException {
 
-    Card movingCard = new Card();
     int currentEmptySpaces = 0;
     for (Card spaces : openPiles) {
       if (spaces == null) {
@@ -196,10 +196,10 @@ public class FreecellModel implements FreecellOperations {
       if (desTemp == null) {
         cascadePiles[destPileNumber] = temp;
       } else {
-        if ((temp.getSuit() == Spade || temp.getSuit() == Club)
-                && (desTemp.getSuit() == Heart || desTemp.getSuit() == Diamond)
-                || (temp.getSuit() == Heart || temp.getSuit() == Diamond)
-                && (desTemp.getSuit() == Spade || desTemp.getSuit() == Club)) {
+        if ((temp.getSuit() == spade || temp.getSuit() == club)
+                && (desTemp.getSuit() == heart || desTemp.getSuit() == diamond)
+                || (temp.getSuit() == heart || temp.getSuit() == diamond)
+                && (desTemp.getSuit() == spade || desTemp.getSuit() == club)) {
           int valueIndex = 0;
           boolean valueMatch = false;
           while (temp.getValue() != valueArray[valueIndex]) {
@@ -371,7 +371,7 @@ public class FreecellModel implements FreecellOperations {
     }
 
     int x = 0;
-    while(x != numOfPiles){
+    while (x != numOfPiles) {
       deck.remove(0);
       x++;
     }
