@@ -120,8 +120,11 @@ public class FreecellModel implements FreecellOperations {
    */
   public void move(PileType source, int pileNumber, int cardIndex,
                    PileType destination, int destPileNumber) throws IllegalArgumentException {
+
     if (source == PileType.CASCADE) {
-      if (cardIndex + 1 != cascadePiles.get(pileNumber).size()) {
+      if (cardIndex == 0) {
+        cardIndex = cascadePiles.get(pileNumber).size() - 1;
+      } else {
         throw new IllegalArgumentException();
       }
     } else if (source == PileType.OPEN) {
@@ -146,17 +149,18 @@ public class FreecellModel implements FreecellOperations {
       }
     } else {
       if (source == PileType.CASCADE) {
-        Card cardBase = (Card) cascadePiles.get(destPileNumber).get(cascadePiles.get(destPileNumber).size() - 1);
+        Card cardBase = (Card) cascadePiles.get(destPileNumber)
+                .get(cascadePiles.get(destPileNumber).size() - 1);
         Card cardMoving = (Card) cascadePiles.get(pileNumber).get(cardIndex);
-        if (cascadeCheck(cardBase, cardMoving)){
+        if (cascadeCheck(cardBase, cardMoving)) {
           cascadePiles.get(destPileNumber).add(cardMoving);
           cascadePiles.get(pileNumber).remove(cardIndex);
         }
-      }
-      else{
-        Card cardBase = (Card) cascadePiles.get(destPileNumber).get(cascadePiles.get(destPileNumber).size() - 1);
+      } else {
+        Card cardBase = (Card) cascadePiles.get(destPileNumber)
+                .get(cascadePiles.get(destPileNumber).size() - 1);
         Card cardMoving = (Card) openPiles[pileNumber];
-        if(cascadeCheck(cardBase, cardMoving)){
+        if (cascadeCheck(cardBase, cardMoving)) {
           cascadePiles.get(destPileNumber).add(cardMoving);
           openPiles[pileNumber] = null;
         }
