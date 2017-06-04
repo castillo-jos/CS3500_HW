@@ -12,15 +12,16 @@ public interface FreecellOperations<K> {
   /**
    * Return a valid and complete deck of cards for a game of Freecell.
    * There is no restriction imposed on the ordering of these cards in the deck.
-   *<p>
+   * <p>
    * An invalid deck is defined as a deck that has one or more of these flaws:
    * <ul>
-   *   <li>It does not have 52 cards</li>
-   *   <li>It has duplicate cards</li>
-   *   <li>It has at least one invalid card (invalid suit or invalid number)
-   *   </li>
+   * <li>It does not have 52 cards</li>
+   * <li>It has duplicate cards</li>
+   * <li>It has at least one invalid card (invalid suit or invalid number)
+   * </li>
    * </ul>
-   *</p>
+   * </p>
+   *
    * @return the deck of cards as a list
    */
   List<K> getDeck();
@@ -28,16 +29,17 @@ public interface FreecellOperations<K> {
   /**
    * Deal a new game of freecell with the given deck, with or without shuffling
    * it first. This method first verifies that the deck is valid.
-   *<p>
+   * <p>
    * It deals the deck among the cascade piles in roundrobin fashion. Thus if
    * there are 4 cascade piles, the 1st pile will get cards 0, 4, 8, ..., the
    * 2nd pile will get cards 1, 5, 9, ..., the 3rd pile will get cards 2, 6, 10,
    * ... and the 4th pile will get cards 3, 7, 11, ....
-   *</p>
+   * </p>
    * <p>
    * Depending on the number of cascade piles, they may have a different number
    * of cards
-   *</p>
+   * </p>
+   *
    * @param numCascadePiles number of cascade piles
    * @param numOpenPiles    number of open piles
    * @param deck            the deck to be dealt
@@ -55,12 +57,10 @@ public interface FreecellOperations<K> {
    *
    * @param source         the type of the source pile see @link{PileType}
    * @param pileNumber     the pile number of the given type, starting at 0
-   * @param cardIndex      the index of the card to be moved from the source
-   *                       pile, starting at 0
+   * @param cardIndex      the index of the card to be moved from the source pile, starting at 0
    * @param destination    the type of the destination pile (see
    * @param destPileNumber the pile number of the given type, starting at 0
-   * @throws IllegalArgumentException if the move is not possible
-   * {@link PileType})
+   * @throws IllegalArgumentException if the move is not possible {@link PileType})
    */
   void move(PileType source, int pileNumber, int cardIndex,
             PileType destination, int destPileNumber) throws IllegalArgumentException;
@@ -93,6 +93,7 @@ public interface FreecellOperations<K> {
    * where [b] is a single blankspace, [n] is newline. Note that there is no
    * newline on the last line
    * </pre>
+   *
    * @return the formatted string as above
    */
   String getGameState();

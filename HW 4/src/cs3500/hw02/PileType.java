@@ -11,7 +11,7 @@ package cs3500.hw02;
  * Foundation: Initially empty, there are 4 foundation
  * piles, one for each suit. Each foundation pile collects cards in increasing
  * order of value for one suit (Ace being the lowest). <br>
- *</p>
+ * </p>
  * The goal of the game is to fill up all the foundation piles
  */
 public enum PileType {

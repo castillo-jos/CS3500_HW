@@ -10,26 +10,29 @@ import java.util.Random;
  * Created by Gus on 5/17/2017.
  */
 public class FreecellModel implements FreecellOperations {
-  private String[] valueArray = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
+  protected String[] valueArray = {"A", "2", "3", "4", "5", "6", "7"
+          , "8", "9", "10", "J", "Q", "K"};
 
-  private final String club = "\u2663";
-  private final String heart = "\u2764";
-  private final String diamond = "\u2666";
-  private final String spade = "\u2660";
+  protected final String club = "♠";
+  protected final String heart = "♥";
+  protected final String diamond = "♦";
+  protected final String spade = "♣";
 
-  private String[] suitArray = {heart, club, diamond, spade};
-  private Card frontOfPile = null;
-  protected ArrayList<LinkedList> cascadePiles;
-  private Card[] openPiles;
-  private List<Card> heartFoundation = new ArrayList<>();
-  private List<Card> clubFoundation = new ArrayList<>();
-  private List<Card> diamondFoundation = new ArrayList<>();
-  private List<Card> spadeFoundation = new ArrayList<>();
+  protected String[] suitArray = {heart, club, diamond, spade};
+  protected ArrayList<List<Card>> cascadePiles;
+  protected Card[] openPiles;
+  protected List<Card> heartFoundation = new ArrayList<>();
+  protected List<Card> clubFoundation = new ArrayList<>();
+  protected List<Card> diamondFoundation = new ArrayList<>();
+  protected List<Card> spadeFoundation = new ArrayList<>();
 
-
+  /**
+   * getDeck has been changed to return an ArrayList only capable of holding Card objects.
+   */
   @Override
-  public List getDeck() {
-    List<Card> deck = new ArrayList();
+  public List<Card> getDeck() {
+    List<Card> deck = new ArrayList<Card>() {
+    };
 
     for (int i = 0; i < suitArray.length; i++) {
       for (int j = 0; j < valueArray.length; j++) {
@@ -58,7 +61,25 @@ public class FreecellModel implements FreecellOperations {
    */
   public void startGame(List deck, int numCascadePiles,
                         int numOpenPiles, boolean shuffle) throws IllegalArgumentException {
+    /**
+     * A class invariant that check whether the deck passed to this method is complete.
+     */
 
+    if (deck == null) {
+      throw new IllegalArgumentException();
+    }
+
+    if (deck.size() != 52) {
+      throw new IllegalArgumentException();
+    }
+
+    if (numCascadePiles < 4) {
+      throw new IllegalArgumentException();
+    }
+
+    if (numOpenPiles < 1) {
+      throw new IllegalArgumentException();
+    }
 
     List<Card> heartCheck = new ArrayList();
     List<Card> clubCheck = new ArrayList();
@@ -100,11 +121,12 @@ public class FreecellModel implements FreecellOperations {
 
 
     if (shuffle) {
-      shuffleDeck(tempDeck);
+      long seed = System.nanoTime();
+      Collections.shuffle(deck, new Random(seed));
     }
 
     openPiles = new Card[numOpenPiles];
-    cascadePiles = createCascadePiles(tempDeck, numCascadePiles);
+    cascadePiles = createCascadePiles(deck, numCascadePiles);
   }
 
   /**
@@ -121,13 +143,53 @@ public class FreecellModel implements FreecellOperations {
   public void move(PileType source, int pileNumber, int cardIndex,
                    PileType destination, int destPileNumber) throws IllegalArgumentException {
 
-    if (source == PileType.CASCADE) {
-      if (cardIndex == 0) {
+    if (pileNumber < 0 || destPileNumber < 0) {
+      throw new IllegalArgumentException();
+    }
+
+    if (source.equals(PileType.CASCADE)) {
+      if (pileNumber >= cascadePiles.size()) {
+        throw new IllegalArgumentException();
+      }
+      if (!(0 <= cardIndex && cardIndex < cascadePiles.get(pileNumber).size())) {
+        throw new IllegalArgumentException();
+      }
+    } else if (source.equals(PileType.OPEN)) {
+      if (pileNumber >= openPiles.length) {
+        throw new IllegalArgumentException();
+      }
+      if (!(0 <= cardIndex && cardIndex < 1)) {
+        throw new IllegalArgumentException();
+      }
+    }
+
+    if (destination.equals(PileType.OPEN)) {
+      if (destPileNumber >= openPiles.length) {
+        throw new IllegalArgumentException();
+      }
+    } else if (destination.equals(PileType.CASCADE)) {
+      if (destPileNumber >= cascadePiles.size()) {
+        throw new IllegalArgumentException();
+      }
+    } else if (destination.equals(PileType.FOUNDATION)) {
+      if (destPileNumber >= 4) {
+        throw new IllegalArgumentException();
+      }
+    }
+
+    if (source.equals(PileType.CASCADE)) {
+      if (pileNumber >= cascadePiles.size()) {
+        throw new IllegalArgumentException();
+      }
+      if (cardIndex == 1) {
         cardIndex = cascadePiles.get(pileNumber).size() - 1;
       } else {
         throw new IllegalArgumentException();
       }
-    } else if (source == PileType.OPEN) {
+    } else if (source.equals(PileType.OPEN)) {
+      if (pileNumber >= openPiles.length) {
+        throw new IllegalArgumentException();
+      }
       if (openPiles[pileNumber] == null) {
         throw new IllegalArgumentException();
       }
@@ -140,18 +202,18 @@ public class FreecellModel implements FreecellOperations {
         throw new IllegalArgumentException();
       } else {
         if (source == PileType.CASCADE) {
-          openPiles[destPileNumber] = (Card) cascadePiles.get(pileNumber).get(cardIndex);
+          openPiles[destPileNumber] = cascadePiles.get(pileNumber).get(cardIndex);
           cascadePiles.get(pileNumber).remove(cardIndex);
         } else {
           openPiles[destPileNumber] = openPiles[pileNumber];
           openPiles[pileNumber] = null;
         }
       }
-    } else {
+    } else if (destination == PileType.CASCADE) {
       if (source == PileType.CASCADE) {
-        Card cardBase = (Card) cascadePiles.get(destPileNumber)
+        Card cardBase = cascadePiles.get(destPileNumber)
                 .get(cascadePiles.get(destPileNumber).size() - 1);
-        Card cardMoving = (Card) cascadePiles.get(pileNumber).get(cardIndex);
+        Card cardMoving = cascadePiles.get(pileNumber).get(cardIndex);
         if (cascadeCheck(cardBase, cardMoving)) {
           cascadePiles.get(destPileNumber).add(cardMoving);
           cascadePiles.get(pileNumber).remove(cardIndex);
@@ -165,8 +227,159 @@ public class FreecellModel implements FreecellOperations {
           openPiles[pileNumber] = null;
         }
       }
+    } else {
+      if (source == PileType.CASCADE) {
+        Card movingCard = cascadePiles.get(pileNumber).get(cardIndex);
+        switch (movingCard.getSuit()) {
+          case heart:
+            if (heartFoundation.isEmpty()) {
+              if (movingCard.getValue().equals("A")) {
+                heartFoundation.add(movingCard);
+                cascadePiles.get(pileNumber).remove(movingCard);
+              } else {
+                throw new IllegalArgumentException();
+              }
+            } else {
+              if (valueArray[heartFoundation.size()].equals(movingCard.getSuit())) {
+                heartFoundation.add(movingCard);
+                cascadePiles.get(pileNumber).remove(movingCard);
+              } else {
+                throw new IllegalArgumentException();
+              }
+            }
+            break;
+          case spade:
+            if (spadeFoundation.isEmpty()) {
+              if (movingCard.getValue().equals("A")) {
+                spadeFoundation.add(movingCard);
+                cascadePiles.get(pileNumber).remove(movingCard);
+              } else {
+                throw new IllegalArgumentException();
+              }
+            } else {
+              if (valueArray[spadeFoundation.size()] == movingCard.getValue()) {
+                spadeFoundation.add(movingCard);
+                cascadePiles.get(pileNumber).remove(movingCard);
+              } else {
+                throw new IllegalArgumentException();
+              }
+            }
+            break;
+          case diamond:
+            if (diamondFoundation.isEmpty()) {
+              if (movingCard.getValue().equals("A")) {
+                diamondFoundation.add(movingCard);
+                cascadePiles.get(pileNumber).remove(movingCard);
+              } else {
+                throw new IllegalArgumentException();
+              }
+            } else {
+              if (valueArray[diamondFoundation.size()] == movingCard.getValue()) {
+                diamondFoundation.add(movingCard);
+                cascadePiles.get(pileNumber).remove(movingCard);
+              } else {
+                throw new IllegalArgumentException();
+              }
+            }
+            break;
+          case club:
+            if (clubFoundation.isEmpty()) {
+              if (movingCard.getValue().equals("A")) {
+                clubFoundation.add(movingCard);
+                cascadePiles.get(pileNumber).remove(movingCard);
+              } else {
+                throw new IllegalArgumentException();
+              }
+            } else {
+              if (valueArray[clubFoundation.size()].equals(movingCard.getValue())) {
+                clubFoundation.add(movingCard);
+                cascadePiles.get(pileNumber).remove(movingCard);
+              } else {
+                throw new IllegalArgumentException();
+              }
+            }
+            break;
+          default:
+            throw new IllegalArgumentException();
+        }
+      } else {
+        Card movingCard = openPiles[pileNumber];
+        switch (movingCard.getSuit()) {
+          case heart:
+            if (heartFoundation.isEmpty()) {
+              if (movingCard.getValue().equals("A")) {
+                heartFoundation.add(movingCard);
+                openPiles[pileNumber] = null;
+              } else {
+                throw new IllegalArgumentException();
+              }
+            } else {
+              if (valueArray[heartFoundation.size()].equals(movingCard.getValue())) {
+                heartFoundation.add(movingCard);
+                openPiles[pileNumber] = null;
+              } else {
+                throw new IllegalArgumentException();
+              }
+            }
+            break;
+          case spade:
+            if (spadeFoundation.isEmpty()) {
+              if (movingCard.getValue().equals("A")) {
+                spadeFoundation.add(movingCard);
+                openPiles[pileNumber] = null;
+              } else {
+                throw new IllegalArgumentException();
+              }
+            } else {
+              if (valueArray[spadeFoundation.size()].equals(movingCard.getValue())) {
+                spadeFoundation.add(movingCard);
+                openPiles[pileNumber] = null;
+              } else {
+                throw new IllegalArgumentException();
+              }
+            }
+            break;
+          case diamond:
+            if (diamondFoundation.isEmpty()) {
+              if (movingCard.getValue().equals("A")) {
+                diamondFoundation.add(movingCard);
+                openPiles[pileNumber] = null;
+              } else {
+                throw new IllegalArgumentException();
+              }
+            } else {
+              if (valueArray[diamondFoundation.size()].equals(movingCard.getValue())) {
+                diamondFoundation.add(movingCard);
+                openPiles[pileNumber] = null;
+              } else {
+                throw new IllegalArgumentException();
+              }
+            }
+            break;
+          case club:
+            if (clubFoundation.isEmpty()) {
+              if (movingCard.getValue().equals("A")) {
+                clubFoundation.add(movingCard);
+                openPiles[pileNumber] = null;
+              } else {
+                throw new IllegalArgumentException();
+              }
+            } else {
+              if (valueArray[clubFoundation.size()].equals(movingCard.getValue())) {
+                clubFoundation.add(movingCard);
+                openPiles[pileNumber] = null;
+              } else {
+                throw new IllegalArgumentException();
+              }
+            }
+            break;
+          default:
+            throw new IllegalArgumentException();
+        }
+      }
     }
   }
+
 
   /**
    * Signal if the game is over or not.
@@ -204,32 +417,30 @@ public class FreecellModel implements FreecellOperations {
    * @return the formatted string as above
    */
   public String getGameState() {
-    for (Card check : openPiles) {
-      if (check != null) {
-        if (check.cardInFront != null) {
-          throw new IllegalArgumentException();
-        }
-      }
-    }
+
     StringBuffer gameState = new StringBuffer();
-    gameState.append("F1: ");
-    for (Card x : heartFoundation) {
-      gameState.append(x + " ");
+    gameState.append("F1:");
+    if (!spadeFoundation.isEmpty()) {
+      gameState.append(" ");
+      for (Card x : spadeFoundation) {
+        gameState.append(x + ", ");
+      }
+
     }
     gameState.append("\n");
-    gameState.append("F2: ");
-    for (Card x : spadeFoundation) {
-      gameState.append(x + " ");
-    }
-    gameState.append("\n");
-    gameState.append("F3: ");
-    for (Card x : diamondFoundation) {
-      gameState.append(x + " ");
-    }
-    gameState.append("\n");
-    gameState.append("F4: ");
+    gameState.append("F2:");
     for (Card x : clubFoundation) {
-      gameState.append(x + " ");
+      gameState.append(" " + x);
+    }
+    gameState.append("\n");
+    gameState.append("F3:");
+    for (Card x : heartFoundation) {
+      gameState.append(" " + x);
+    }
+    gameState.append("\n");
+    gameState.append("F4:");
+    for (Card x : diamondFoundation) {
+      gameState.append(" " + x);
     }
     gameState.append("\n");
 
@@ -241,7 +452,7 @@ public class FreecellModel implements FreecellOperations {
       }
     }
 
-    for (int j = 0; j < cascadePiles.size(); j++) {
+    for (int j = 0; j + 1 < cascadePiles.size(); j++) {
       gameState.append("C" + (j + 1) + ": ");
       for (int k = 0; k < cascadePiles.get(j).size(); k++) {
         if (k + 1 != cascadePiles.get(j).size()) {
@@ -253,6 +464,16 @@ public class FreecellModel implements FreecellOperations {
       }
       gameState.append("\n");
     }
+    gameState.append("C" + (cascadePiles.size()) + ": ");
+    for (int k = 0; k < cascadePiles.get(cascadePiles.size() - 1).size(); k++) {
+      if (k + 1 != cascadePiles.get(cascadePiles.size() - 1).size()) {
+        gameState.append(cascadePiles.get(cascadePiles.size() - 1).get(k));
+        gameState.append(", ");
+      } else {
+        gameState.append(cascadePiles.get(cascadePiles.size() - 1).get(k));
+      }
+    }
+
     return gameState.toString();
   }
 
@@ -266,7 +487,7 @@ public class FreecellModel implements FreecellOperations {
 
         for (int i = 0; i < singleSuit.size(); i++) {
           String cardValue = singleSuit.get(i).getValue();
-          if (cardValue == valueArray[j]) {
+          if (cardValue.equals(valueArray[j])) {
             valueCount++;
           }
         }
@@ -289,7 +510,7 @@ public class FreecellModel implements FreecellOperations {
 
         for (int i = 0; i < singleSuit.size(); i++) {
           String cardValue = singleSuit.get(i).getValue();
-          if (cardValue == valueArray[j]) {
+          if (cardValue.equals(valueArray[j])) {
             valueCount++;
           }
         }
@@ -302,22 +523,6 @@ public class FreecellModel implements FreecellOperations {
     return true;
   }
 
-  private void shuffleDeck(List<Card> deck) {
-    long seed = System.nanoTime();
-    Collections.shuffle(deck, new Random(seed));
-  }
-
-  private void addToPile(Card frontOfPile, Card newCard, Card cardBehind) {
-    frontOfPile.cardInFront = newCard;
-    frontOfPile.cardInBack = cardBehind;
-  }
-
-  private void removeFromPile(Card frontOfPile) {
-    if (frontOfPile == null) {
-      throw new IllegalArgumentException();
-    }
-    frontOfPile.cardInBack.cardInFront = null;
-  }
 
   private ArrayList<LinkedList> createCascadePiles(List<Card> deck, int numOfPiles) {
     ArrayList<LinkedList> cascadePiles = new ArrayList<>(numOfPiles);
@@ -333,57 +538,11 @@ public class FreecellModel implements FreecellOperations {
   }
 
 
-  private void sortFoundationPiles(Card temp) {
-    switch (temp.getSuit()) {
-      case "\u2764":
-        if (temp.getValue() == valueArray[heartFoundation.size()]) {
-          heartFoundation.add(temp);
-          temp.cardIsInPile = PileType.FOUNDATION;
-        } else {
-          throw new IllegalArgumentException();
-        }
-        removeFromPile(temp);
-        break;
-
-      case "\u2663":
-        if (temp.getValue() == valueArray[clubFoundation.size()]) {
-          clubFoundation.add(temp);
-          temp.cardIsInPile = PileType.FOUNDATION;
-        } else {
-          throw new IllegalArgumentException();
-        }
-        removeFromPile(temp);
-        break;
-
-      case "\u2666":
-        if (temp.getValue() == valueArray[diamondFoundation.size()]) {
-          diamondFoundation.add(temp);
-          temp.cardIsInPile = PileType.FOUNDATION;
-        } else {
-          throw new IllegalArgumentException();
-        }
-        removeFromPile(temp);
-        break;
-
-      case "\u2660":
-        if (temp.getValue() == valueArray[spadeFoundation.size()]) {
-          spadeFoundation.add(temp);
-          temp.cardIsInPile = PileType.FOUNDATION;
-        } else {
-          throw new IllegalArgumentException();
-        }
-        removeFromPile(temp);
-        break;
-      default:
-        throw new IllegalArgumentException();
-    }
-  }
-
-  private boolean cascadeCheck(Card cardBase, Card cardMove) {
+  protected boolean cascadeCheck(Card cardBase, Card cardMove) {
     int cardValueIndex = 0;
     if (((cardBase.getSuit() == heart || cardBase.getSuit() == diamond)
             && (cardMove.getSuit() == spade || cardMove.getSuit() == club))) {
-      while (cardBase.getValue() == valueArray[cardValueIndex]) {
+      while (cardBase.getValue() != valueArray[cardValueIndex]) {
         cardValueIndex++;
       }
       if (cardMove.getValue() != valueArray[cardValueIndex - 1]) {
@@ -391,7 +550,7 @@ public class FreecellModel implements FreecellOperations {
       }
     } else if (((cardBase.getSuit() == spade || cardBase.getSuit() == club)
             && (cardMove.getSuit() == heart || cardMove.getSuit() == diamond))) {
-      while (cardBase.getValue() == valueArray[cardValueIndex]) {
+      while (cardBase.getValue() != valueArray[cardValueIndex]) {
         cardValueIndex++;
       }
       if (cardMove.getValue() != valueArray[cardValueIndex - 1]) {
