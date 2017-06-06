@@ -1,13 +1,18 @@
+import java.text.BreakIterator;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Gus on 6/4/2017.
  */
 public class Note {
   private String pitch;
   private int octave;
+  private List<Beat> listOfBeats = new ArrayList<Beat>();
 
   public Note(String pitch, int octave) throws IllegalArgumentException {
     if (pitch.length() < 1 || pitch.length() > 3) {
-      throw new IllegalStateException();
+      throw new IllegalArgumentException();
     }
 
     /**
@@ -20,7 +25,7 @@ public class Note {
      * alphabetic.
      */
     if (!(Character.isAlphabetic(pitch.charAt(0)))) {
-      throw new IllegalStateException();
+      throw new IllegalArgumentException();
     }
     /**
      * This checks that the first character in the pitch string is valid,
@@ -42,21 +47,40 @@ public class Note {
      * This check only occurs if the pitch string is two characters long.
      * If it is, then the second char must be equal to #.
      */
-    if(pitch.length() == 2){
-      if(pitch.charAt(1) != '#'){
-        throw new IllegalStateException();
+    if (pitch.length() == 2) {
+      if (pitch.charAt(1) != '#') {
+        throw new IllegalArgumentException();
       }
     }
 
     /**
      * This checks to see if the octave passed is at least greater or equal to one.
-    **/
-    if(octave < 1){
-      throw new IllegalStateException();
+     **/
+    if (octave < 1) {
+      throw new IllegalArgumentException();
     }
 
+    setPitch(pitch);
+    setOctave(octave);
+  }
+
+  public void addBeat(int duration, int startTime){
+
+  }
+  private void setPitch(String pitch) {
     this.pitch = pitch;
+  }
+
+  private void setOctave(int octave) {
     this.octave = octave;
+  }
+
+  public String getPitch() {
+    return pitch;
+  }
+
+  public int getOctave() {
+    return octave;
   }
 
   public String toString() {
