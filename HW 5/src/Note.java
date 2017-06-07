@@ -1,3 +1,5 @@
+import com.sun.javafx.iio.png.PNGImageLoader2;
+
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +10,8 @@ import java.util.List;
 public class Note {
   private String pitch;
   private int octave;
-  private List<Beat> listOfBeats = new ArrayList<Beat>();
+  public List<String> listOfBeats = new ArrayList<String>();
+  private PitchNames pitchName;
 
   public Note(String pitch, int octave) throws IllegalArgumentException {
     if (pitch.length() < 1 || pitch.length() > 3) {
@@ -48,7 +51,7 @@ public class Note {
      * If it is, then the second char must be equal to #.
      */
     if (pitch.length() == 2) {
-      if (pitch.charAt(1) != '#') {
+      if (pitch.charAt(1) != '♯') {
         throw new IllegalArgumentException();
       }
     }
@@ -62,11 +65,9 @@ public class Note {
 
     setPitch(pitch);
     setOctave(octave);
+    setPitchName(pitch);
   }
 
-  public void addBeat(int duration, int startTime){
-
-  }
   private void setPitch(String pitch) {
     this.pitch = pitch;
   }
@@ -83,7 +84,36 @@ public class Note {
     return octave;
   }
 
+  public void addBeat(int startTime, int duration) {
+    System.out.println("how are you");
+    if(listOfBeats.isEmpty()){
+      listOfBeats.add("     ");
+      System.out.println("hehe");
+    }
+    while (startTime >= listOfBeats.size()) {
+      listOfBeats.add("     ");
+      System.out.println(listOfBeats.size());
+    }
+
+    listOfBeats.add(startTime, "  X  ");
+    for (int i = startTime + 1; i < startTime + duration; i++) {
+      listOfBeats.add(i, "  |  ");
+    }
+  }
+
   public String toString() {
-    return pitch + octave;
+    return "  " + pitch + octave + "  ";
+  }
+
+  public void setPitchName(String pitch) {
+    for (PitchNames eachPitch : PitchNames.values()) {
+      if (eachPitch.toString().equals(pitch)) {
+        pitchName = eachPitch;
+      }
+    }
+  }
+
+  public PitchNames getPitchName() {
+    return pitchName;
   }
 }
