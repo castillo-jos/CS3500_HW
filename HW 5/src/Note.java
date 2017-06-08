@@ -10,7 +10,7 @@ import java.util.List;
 public class Note {
   private String pitch;
   private int octave;
-  public List<String> listOfBeats = new ArrayList<String>();
+  public List<String> listOfBeats = new ArrayList<>();
   private PitchNames pitchName;
 
   public Note(String pitch, int octave) throws IllegalArgumentException {
@@ -85,24 +85,25 @@ public class Note {
   }
 
   public void addBeat(int startTime, int duration) {
-    System.out.println("how are you");
-    if(listOfBeats.isEmpty()){
-      listOfBeats.add("     ");
-      System.out.println("hehe");
-    }
-    while (startTime >= listOfBeats.size()) {
-      listOfBeats.add("     ");
-      System.out.println(listOfBeats.size());
+    if (listOfBeats.isEmpty()) {
+      listOfBeats.add(String.format("%5s",""));
     }
 
-    listOfBeats.add(startTime, "  X  ");
+    if (startTime+duration > listOfBeats.size()) {
+      while ((startTime+duration  - 1)  >= listOfBeats.size()) {
+        listOfBeats.add(String.format("%5s",""));
+      }
+    }
+
+    listOfBeats.set(startTime, "  X  ");
     for (int i = startTime + 1; i < startTime + duration; i++) {
-      listOfBeats.add(i, "  |  ");
+      listOfBeats.set(i, "  |  ");
     }
   }
 
   public String toString() {
-    return "  " + pitch + octave + "  ";
+    return String.format(" %1$3s ", pitchName.toString()+octave);
+
   }
 
   public void setPitchName(String pitch) {
