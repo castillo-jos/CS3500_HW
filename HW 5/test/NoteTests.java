@@ -14,7 +14,7 @@ public class NoteTests {
   @Test
   public void ValidNoteTestOne() {
     Note testNote = new Note("C", 4);
-    assertEquals("C4", testNote.toString());
+    assertEquals("  C4 ", testNote.toString());
   }
 
   /**
@@ -26,7 +26,7 @@ public class NoteTests {
   @Test
   public void ValidNoteTestTwo() {
     Note testNote = new Note("C#", 4);
-    assertEquals("C#4", testNote.toString());
+    assertEquals(" C#4 ", testNote.toString());
   }
 
   /**
@@ -84,6 +84,25 @@ public class NoteTests {
   @Test(expected = IllegalArgumentException.class)
   public void InvalidOctaveTest() {
     Note testNote = new Note("C", 0);
+  }
+
+  /**
+   * A test that makes sure a the NoteID pass is not less than one.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void InvaildNoteIDTest() {
+    Note testNote = new Note(-1);
+  }
+
+  /**
+   * A test to make sure both constructors create the same Note object.
+   */
+  @Test
+  public void sameNoteDifferentConstructors() {
+    Note testNote1 = new Note("C", 4);
+    Note testNote2 = new Note(testNote1.getNoteID());
+
+    assertEquals(testNote1.toString(), testNote2.toString());
   }
 }
 

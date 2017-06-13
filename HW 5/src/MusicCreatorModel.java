@@ -4,75 +4,95 @@ import java.util.List;
 /**
  * Created by Gus on 6/5/2017.
  */
+
+/**
+ * A class than implements MusicCreatorOperations in order to store, create, remove, and
+ * manipulate Note Objects.
+ */
 public class MusicCreatorModel implements MusicCreatorOperations {
-  List<Note> listOfNotes = new ArrayList<Note>();
-  List<Integer> lengthOfMusic = new ArrayList<Integer>();
-  String[] pitchNames = {"C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"};
+  //A list for storing list of Note objects
+  private List<Note> listOfNotes = new ArrayList<Note>();
+
 
   @Override
-  public void startCreator() {
-    lengthOfMusic.add(0);
-  }
-
-  private void addNote(String pitch, int octave) {
-    listOfNotes.add(new Note(pitch, octave));
+  public void startCreator(Note firstNote, Note secondNote) {
+    addNote(firstNote);
+    addNote(secondNote);
   }
 
   @Override
-  public void addBeat(String pitch, int octave, int startTime, int duration) {
-    if (octave < 1) {
+  public void addNote(Note newNote) throws IllegalArgumentException {
+    //adds new Note if list is empty
+    if (listOfNotes.isEmpty()) {
+      listOfNotes.add(newNote);
+      //creates a group of Notes to fill in space if new Note is higher than highest note stored
+    } else if (newNote.getNoteID()
+            > listOfNotes.get(listOfNotes.size() - 1).getNoteID()) {
+      Note lastNote = listOfNotes.get(listOfNotes.size() - 1);
+      int notesToAdd = newNote.getNoteID() - lastNote.getNoteID();
+      for (int i = 1; i <= notesToAdd; i++) {
+        listOfNotes.add(new Note(lastNote.getNoteID() + i));
+      }
+      //creates a group of Notes to fill in space if new Note is lower than lowest note stored
+    } else if (newNote.getNoteID()
+            < listOfNotes.get(0).getNoteID()) {
+      Note firstNote = listOfNotes.get(0);
+      int notesToAdd = firstNote.getNoteID() - newNote.getNoteID();
+      for (int i = 0; i < notesToAdd; i++) {
+        listOfNotes.add(i, new Note(newNote.getNoteID() + i));
+      }
+    } else {
       throw new IllegalArgumentException();
     }
+  }
 
-    boolean isNoteCreated = false;
-    Note tempNote = new Note(pitch, octave);
+  @Override
+  public void removeFirstNote() throws IllegalArgumentException {
+    if (listOfNotes.isEmpty()) {
+      throw new IllegalArgumentException();
+    }
+    listOfNotes.remove(0);
+  }
 
+  @Override
+  public void removeLastNote() throws IllegalArgumentException {
+    if (listOfNotes.isEmpty()) {
+      throw new IllegalArgumentException();
+    }
+    listOfNotes.remove(listOfNotes.size() - 1);
+  }
 
+  @Override
+  public void addBeat(Note selectedNote, int startTime, int duration)
+          throws IllegalArgumentException {
+    boolean beatAdded = false;
     for (Note eachNote : listOfNotes) {
-      if (eachNote.toString().equals("  " + pitch + octave + "  ")) {
-        isNoteCreated = true;
+      if (selectedNote.toString().equals(eachNote.toString())) {
         eachNote.addBeat(startTime, duration);
+        beatAdded = true;
       }
     }
 
-    if (!isNoteCreated) {
-      if (listOfNotes.isEmpty()) {
-        addNote(pitch, octave);
-        listOfNotes.get(0).addBeat(startTime, duration);
-      } else if (octave >= listOfNotes.get(listOfNotes.size() - 1).getOctave()) {
-        Note lastNote = listOfNotes.get(listOfNotes.size() - 1);
-        int baseOctave = lastNote.getOctave();
-        int octavesToAdd = octave - lastNote.getOctave();
-        int notesToAdd = octavesToAdd * 12 + (tempNote.getPitchName().ordinal() - lastNote.getPitchName().ordinal() - 1);
-        int addedOctave = 0;
-        for (int i = notesToAdd; i >= 0; i--) {
-          Note addedNote = listOfNotes.get(listOfNotes.size() - 1);
-          PitchNames tempPitchName = PitchNames.values()[(addedNote.getPitchName().ordinal() + 1) % 12];
-          if ((tempPitchName.ordinal() + 1) % 12 == 1) {
-            addedOctave++;
-          }
-          addNote(tempPitchName.toString(), addedOctave + baseOctave);
-        }
-        listOfNotes.get(listOfNotes.size() - 1).addBeat(startTime, duration);
-      } else if (octave < listOfNotes.get(listOfNotes.size() - 1).getOctave()) {
-        Note firstNote = listOfNotes.get(0);
-        int baseOctave = firstNote.getOctave();
-        int octavesToAdd = baseOctave - octave;
-        int notesToAdd = octavesToAdd * 12 + (tempNote.getPitchName().ordinal() - firstNote.getPitchName().ordinal() + 1);
-        int addedOctave = 0;
-        for (int i = notesToAdd; i >= 0; i--) {
-          Note addedNote = listOfNotes.get(0);
-          PitchNames tempPitchName = PitchNames.values()[(12 + addedNote.getPitchName().ordinal() - 1) % 12];
-          if ((tempPitchName.ordinal()) % 12 == 11) {
-            addedOctave++;
-          }
-          listOfNotes.add(0, new Note(tempPitchName.toString(), baseOctave - (addedOctave)));
-        }
-        listOfNotes.get(0).addBeat(startTime, duration);
-      }
+    if (!beatAdded) {
+      throw new IllegalArgumentException();
     }
   }
 
+  @Override
+  public void removeBeat(Note selectedNote, int startTime)
+          throws IllegalArgumentException {
+    boolean beatRemoved = false;
+    for (Note eachNote : listOfNotes) {
+      if (selectedNote.toString().equals(eachNote.toString())) {
+        eachNote.removeBeat(startTime);
+        beatRemoved = true;
+      }
+    }
+
+    if (!beatRemoved) {
+      throw new IllegalArgumentException();
+    }
+  }
 
   @Override
   public String showSheetMusic() {
@@ -90,19 +110,20 @@ public class MusicCreatorModel implements MusicCreatorOperations {
     }
 
     for (Note eachNote : listOfNotes) {
-      if (!(eachNote.listOfBeats.size() == longestNote)) {
+      if (eachNote.listOfBeats.size() != longestNote) {
         for (int i = eachNote.listOfBeats.size(); i < longestNote; i++) {
-          eachNote.listOfBeats.add(String.format("%5s",""));
+          eachNote.listOfBeats.add(String.format("%5s", ""));
         }
       }
     }
     for (int i = 0; i < longestNote; i++) {
-      sheetMusic.append(String.format("%1$2s",i));
+      sheetMusic.append(String.format("%2s", i));
       for (Note eachNote : listOfNotes) {
-        sheetMusic.append(eachNote.listOfBeats.get(i).toString());
+        sheetMusic.append(eachNote.listOfBeats.get(i));
       }
       sheetMusic.append("\n");
     }
+    sheetMusic.delete(sheetMusic.length() - 1, sheetMusic.length());
     return sheetMusic.toString();
   }
 }

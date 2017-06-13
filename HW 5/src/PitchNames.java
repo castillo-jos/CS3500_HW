@@ -1,6 +1,10 @@
 /**
  * Created by Gus on 6/7/2017.
  */
+
+/**
+ * A list of enums to determine Pitch value.
+ */
 public enum PitchNames {
   C {
     public String toString() {
@@ -9,7 +13,7 @@ public enum PitchNames {
   },
   CSHARP {
     public String toString() {
-      return "C♯";
+      return "C#";
     }
   },
   D {
@@ -19,7 +23,7 @@ public enum PitchNames {
   },
   DSHARP {
     public String toString() {
-      return "D♯";
+      return "D#";
     }
   },
   E {
@@ -34,7 +38,7 @@ public enum PitchNames {
   },
   FSHARP {
     public String toString() {
-      return "E♯";
+      return "F#";
     }
   },
   G {
@@ -44,7 +48,7 @@ public enum PitchNames {
   },
   GSHARP {
     public String toString() {
-      return "G♯";
+      return "G#";
     }
   },
   A {
@@ -54,7 +58,7 @@ public enum PitchNames {
   },
   ASHARP {
     public String toString() {
-      return "A♯";
+      return "A#";
     }
   },
   B {
